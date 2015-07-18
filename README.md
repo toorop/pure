@@ -1,2 +1,2 @@
-# clear
+# Pure 
 HTTP proxy
