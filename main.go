@@ -13,6 +13,7 @@ import (
 	"github.com/toorop/yara"
 )
 
+// CA_CERT -> CA cert (amazing !)
 var CA_CERT = []byte(`-----BEGIN CERTIFICATE-----
 MIIB+jCCAWOgAwIBAgIJAO+gwjqaRNK+MA0GCSqGSIb3DQEBCwUAMBUxEzARBgNV
 BAoMClB1cmUgcHJveHkwIBcNMTUwNzIyMTA1MDQ1WhgPMjA1MDA3MTMxMDUwNDVa
@@ -27,6 +28,7 @@ hZLLzeuWbT6T+mikWoZZive18v81kY7Rf956Ai3YKNgh2WDHMEBRJ9VUdmq08TSI
 ckDzupnnvj5B9Uhq3/xQ8egaCXhDYSmCq17wuZNx
 -----END CERTIFICATE-----`)
 
+// CA_KEY  key
 var CA_KEY = []byte(`-----BEGIN PRIVATE KEY-----
 MIICdwIBADANBgkqhkiG9w0BAQEFAASCAmEwggJdAgEAAoGBAM6MHr+vpsT9oUs1
 gEoiiMUY9IT57tVOVPt71PJh6kTgOwA6u4Q2jUt37Us61IU5OHhXxM+Ky4kcElux
