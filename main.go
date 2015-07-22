@@ -10,6 +10,7 @@ import (
 	"regexp"
 
 	"github.com/toorop/goproxy"
+	"github.com/toorop/goproxy/ext/auth"
 	"github.com/toorop/yara"
 )
 
@@ -54,11 +55,14 @@ func handleErr(err error) {
 
 func main() {
 	verbose := flag.Bool("v", false, "should every proxy request be logged to stdout")
+	login := flag.String("login", "", "proxy login")
+	password := flag.String("password", "", "proxy passwd")
+	addr := flag.String("addr", ":8080", "proxy listen address")
+	flag.Parse()
 
 	// Yara
 	c, err := yara.NewCompiler()
 	handleErr(err)
-
 	// Load & compile rules
 	err = filepath.Walk("rules", func(path string, info os.FileInfo, err error) error {
 		log.Println(path)
@@ -75,9 +79,6 @@ func main() {
 	}
 	c.Destroy()
 
-	addr := flag.String("addr", "192.168.0.1:8080", "proxy listen address")
-	flag.Parse()
-
 	// launch proxy
 	goproxy.CertOrganisation = "Pure proxy"
 	goproxy.GoproxyCa, err = tls.X509KeyPair(CA_CERT, CA_KEY)
@@ -85,9 +86,9 @@ func main() {
 	proxy := goproxy.NewProxyHttpServer()
 	proxy.OnRequest(goproxy.ReqHostMatches(regexp.MustCompile("^.*$"))).HandleConnect(goproxy.AlwaysMitm)
 	proxy.Verbose = *verbose
-	/*proxy.OnRequest().HandleConnect(auth.BasicConnect("my_realm", func(user, passwd string) bool {
-		return user == "toorop" && passwd == "toorop"
-	}))*/
+	auth.ProxyBasic(proxy, "my_realm", func(user, passwd string) bool {
+		return user == *login && passwd == *password
+	})
 	proxy.OnRequest().HandleConnectFunc(func(host string, ctx *goproxy.ProxyCtx) (*goproxy.ConnectAction, string) {
 		log.Println(host)
 		name := ""
