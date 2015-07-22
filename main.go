@@ -1,15 +1,48 @@
 package main
 
 import (
+	"crypto/tls"
 	"flag"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 
-	"github.com/elazarl/goproxy"
+	"github.com/toorop/goproxy"
 	"github.com/toorop/yara"
 )
+
+var CA_CERT = []byte(`-----BEGIN CERTIFICATE-----
+MIIB+jCCAWOgAwIBAgIJAO+gwjqaRNK+MA0GCSqGSIb3DQEBCwUAMBUxEzARBgNV
+BAoMClB1cmUgcHJveHkwIBcNMTUwNzIyMTA1MDQ1WhgPMjA1MDA3MTMxMDUwNDVa
+MBUxEzARBgNVBAoMClB1cmUgcHJveHkwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJ
+AoGBAM6MHr+vpsT9oUs1gEoiiMUY9IT57tVOVPt71PJh6kTgOwA6u4Q2jUt37Us6
+1IU5OHhXxM+Ky4kcElux+VhsSFvguCqSNyzFvYwH4/PMAHBv9R5QOcx7FicHb6ho
+nCW83q6o8bku67SS5C0D9trJViEmyBYssmIv3x8jtH5b1KppAgMBAAGjUDBOMB0G
+A1UdDgQWBBSFt2/5pKojMqhkHxEIp5p4wT4UWjAfBgNVHSMEGDAWgBSFt2/5pKoj
+MqhkHxEIp5p4wT4UWjAMBgNVHRMEBTADAQH/MA0GCSqGSIb3DQEBCwUAA4GBADMU
+WM+QWtW+Yybia61B7Y8wY+C4A7gO3ag4TsKNOHB2XLHY/aCXOwxEhBvJYGmwECW2
+hZLLzeuWbT6T+mikWoZZive18v81kY7Rf956Ai3YKNgh2WDHMEBRJ9VUdmq08TSI
+ckDzupnnvj5B9Uhq3/xQ8egaCXhDYSmCq17wuZNx
+-----END CERTIFICATE-----`)
+
+var CA_KEY = []byte(`-----BEGIN PRIVATE KEY-----
+MIICdwIBADANBgkqhkiG9w0BAQEFAASCAmEwggJdAgEAAoGBAM6MHr+vpsT9oUs1
+gEoiiMUY9IT57tVOVPt71PJh6kTgOwA6u4Q2jUt37Us61IU5OHhXxM+Ky4kcElux
++VhsSFvguCqSNyzFvYwH4/PMAHBv9R5QOcx7FicHb6honCW83q6o8bku67SS5C0D
+9trJViEmyBYssmIv3x8jtH5b1KppAgMBAAECgYEAnggJcsJTR/+CzEd4C8DWgm8w
+jxmnid7wGKZLbNRL6TzjB67oUCVpACgXD+tINVJtiW4l8GGSjypCRZQrYmMfDIRg
+uvHtQLUk3uWFvHQ8NPU/49irxZ95HwqMJlJzw2AzlpZR3BPT0QMwSyTH3kz1bgAu
+i6mQxI42A4wSHgj52QECQQD3CEPz1+5k3JHTmpIV5C+Uzj/rAFQ1rF5JfeE5KEBB
+Ta3vMr8ZxWzrk+YqHnz0fT5OrRD2lS7QmQbvtGOgJfrhAkEA1gueIPuBp8T5WtBZ
+Hn9ASsmJVN0XWqcp6iqbX3QHsGRkl73ke7ewBKIzjqm7wFCOjlcHroxYNnve9gHc
+MlZoiQJBALIjx7zkDgm19YL+iDI5JwbL5NP2nMNH1YZxvCSXnh55geBoW96du/n1
+4Zil+73jQzdBHmZzFhte/t2E3AL04IECQANAwfJ2YA4QrEl5CSGxhWSdk3y6r3Qt
+PjHU2++jb8p6fBziQeqva/lmDaqJYdUWZFQ9dlxsvZp2X3kVpicNsSECQFC2W9s1
+7GySl8NLqgOaStq94uyK1rQpJxQlArqMZbi7COIlQZ0Q0r5m9aALNxXYeIs8HGJN
+Ut0HOxyRVMZunh4=
+-----END PRIVATE KEY-----`)
 
 func handleErr(err error) {
 	if err != nil {
@@ -40,16 +73,19 @@ func main() {
 	}
 	c.Destroy()
 
-	addr := flag.String("addr", ":8080", "proxy listen address")
+	addr := flag.String("addr", "192.168.0.1:8080", "proxy listen address")
 	flag.Parse()
+
+	// launch proxy
+	goproxy.CertOrganisation = "Pure proxy"
+	goproxy.GoproxyCa, err = tls.X509KeyPair(CA_CERT, CA_KEY)
+	handleErr(err)
 	proxy := goproxy.NewProxyHttpServer()
+	proxy.OnRequest(goproxy.ReqHostMatches(regexp.MustCompile("^.*$"))).HandleConnect(goproxy.AlwaysMitm)
 	proxy.Verbose = *verbose
-	/*proxy.OnRequest().HandleConnectFunc(f func(host string, ctx *goproxy.ProxyCtx){
-	  log.Println("Host", host)
-	})*/
-
-	proxy.OnRequest(goproxy.ReqHostIs("www.zdnet.fr")).HandleConnect(goproxy.AlwaysMitm)
-
+	/*proxy.OnRequest().HandleConnect(auth.BasicConnect("my_realm", func(user, passwd string) bool {
+		return user == "toorop" && passwd == "toorop"
+	}))*/
 	proxy.OnRequest().HandleConnectFunc(func(host string, ctx *goproxy.ProxyCtx) (*goproxy.ConnectAction, string) {
 		log.Println(host)
 		name := ""
@@ -66,10 +102,10 @@ func main() {
 
 	proxy.OnRequest().DoFunc(
 		func(r *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
-			//log.Println("On a une requete")
-			//r.Header.Set("X-Pure", "0.0.1")
+			log.Println("request: " + r.RequestURI)
+			r.Header.Set("X-Pure", "0.0.1")
 			name := ""
-			err = engine.ScanMemory([]byte(r.Host), func(rule *yara.Rule) yara.CallbackStatus {
+			err = engine.ScanMemory([]byte(r.RequestURI), func(rule *yara.Rule) yara.CallbackStatus {
 				name = rule.Identifier
 				return yara.Abort
 			})

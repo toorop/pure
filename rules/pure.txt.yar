@@ -1218,3 +1218,23 @@ rule pure_txt_122
         $match
 }
 
+rule pure_txt_123
+{
+    meta:
+        description = ".adoptima.com"
+    strings:
+        $match = ".adoptima.com"
+    condition:
+        $match
+}
+
+rule pure_txt_124
+{
+    meta:
+        description = ".vshop.fr"
+    strings:
+        $match = ".vshop.fr"
+    condition:
+        $match
+}
+
