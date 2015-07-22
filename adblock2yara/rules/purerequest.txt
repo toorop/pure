@@ -1,0 +1,17 @@
+advertising.js
+/js_defer.
+what-is-my-ip.js
+rrssb.min.js
+atrk.js
+sqweb.js
+ec_omniture_s_code.js
+/utag.js
+/quant.js
+/piwik.js
+/ads.js
+/advertisement.js
+/cookie.js
+/retargeting-v2.min.js
+/metro-skin.js
+/track_display_module.js
+.jobaproximite.com/sites/default/files/js/
