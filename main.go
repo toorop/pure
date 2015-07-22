@@ -84,11 +84,12 @@ func main() {
 	goproxy.GoproxyCa, err = tls.X509KeyPair(CA_CERT, CA_KEY)
 	handleErr(err)
 	proxy := goproxy.NewProxyHttpServer()
-	proxy.OnRequest(goproxy.ReqHostMatches(regexp.MustCompile("^.*$"))).HandleConnect(goproxy.AlwaysMitm)
-	proxy.Verbose = *verbose
 	auth.ProxyBasic(proxy, "my_realm", func(user, passwd string) bool {
 		return user == *login && passwd == *password
 	})
+	proxy.OnRequest(goproxy.ReqHostMatches(regexp.MustCompile("^.*$"))).HandleConnect(goproxy.AlwaysMitm)
+	proxy.Verbose = *verbose
+
 	proxy.OnRequest().HandleConnectFunc(func(host string, ctx *goproxy.ProxyCtx) (*goproxy.ConnectAction, string) {
 		log.Println(host)
 		name := ""

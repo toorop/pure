@@ -1,1 +1,5 @@
-go build --ldflags '-extldflags "-static"' -o pure
+go build --ldflags '-extldflags "-static"' -o dist/pure
+cp -pr rules dist/
+zip -r pure.zip dist
+
+rsync -avz pure.zip root@toorop.fr:/srv/ftp/softs/pure/
