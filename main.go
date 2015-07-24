@@ -1,16 +1,19 @@
 package main
 
 import (
+	"bytes"
 	"crypto/tls"
 	"flag"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
-	"regexp"
+	"strings"
+
+	"golang.org/x/net/html"
 
 	"github.com/toorop/goproxy"
-	"github.com/toorop/goproxy/ext/auth"
 	"github.com/toorop/yara"
 )
 
@@ -55,8 +58,8 @@ func handleErr(err error) {
 
 func main() {
 	verbose := flag.Bool("v", false, "should every proxy request be logged to stdout")
-	login := flag.String("login", "", "proxy login")
-	password := flag.String("password", "", "proxy passwd")
+	/*login := flag.String("login", "", "proxy login")
+	password := flag.String("password", "", "proxy passwd")*/
 	addr := flag.String("addr", ":8080", "proxy listen address")
 	flag.Parse()
 
@@ -84,14 +87,14 @@ func main() {
 	goproxy.GoproxyCa, err = tls.X509KeyPair(CA_CERT, CA_KEY)
 	handleErr(err)
 	proxy := goproxy.NewProxyHttpServer()
-	auth.ProxyBasic(proxy, "my_realm", func(user, passwd string) bool {
-		return user == *login && passwd == *password
-	})
-	proxy.OnRequest(goproxy.ReqHostMatches(regexp.MustCompile("^.*$"))).HandleConnect(goproxy.AlwaysMitm)
 	proxy.Verbose = *verbose
+	proxy.OnRequest().HandleConnect(goproxy.AlwaysMitm)
+	/*auth.ProxyBasic(proxy, "my_realm", func(user, passwd string) bool {
+		return user == *login && passwd == *password
+	})*/
 
 	proxy.OnRequest().HandleConnectFunc(func(host string, ctx *goproxy.ProxyCtx) (*goproxy.ConnectAction, string) {
-		log.Println(host)
+		//log.Println(host)
 		name := ""
 		err = engine.ScanMemory([]byte(host), func(rule *yara.Rule) yara.CallbackStatus {
 			name = rule.Identifier
@@ -106,7 +109,7 @@ func main() {
 
 	proxy.OnRequest().DoFunc(
 		func(r *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
-			log.Println("request: " + r.RequestURI)
+			//log.Println("request: " + r.RequestURI)
 			r.Header.Set("X-Pure", "0.0.1")
 			name := ""
 			err = engine.ScanMemory([]byte(r.RequestURI), func(rule *yara.Rule) yara.CallbackStatus {
@@ -114,13 +117,66 @@ func main() {
 				return yara.Abort
 			})
 			if name != "" {
-				log.Println("BLOCKED", name, r.Host)
+				log.Println("BLOCKED", name, r.RequestURI)
 				return r, goproxy.NewResponse(r,
 					goproxy.ContentTypeText, http.StatusForbidden,
-					"Fuck you")
+					"I'm sorry, Dave. I'm afraid I can't do that.")
 			}
-			log.Println(r.Method, r.Host, r.RequestURI)
+			//log.Println(r.Method, r.Host, r.RequestURI)
 			return r, nil
 		})
+
+	// Scan response - POC for the verge
+	block2remove := make(map[string][]string)
+	block2remove["div"] = []string{"m-entry__sidebar", "yahoo-recommends", "m-linkset", "m-footer", "m-article__comments-section", "video-wrap"}
+	block2remove["ul"] = []string{"p-entry-nav", "m-header__social"}
+	proxy.OnResponse().DoFunc(func(resp *http.Response, ctx *goproxy.ProxyCtx) *http.Response {
+		contentType := resp.Header.Get("content-type")
+		if strings.HasPrefix(contentType, "text/html") {
+			doc, err := html.Parse(resp.Body)
+			if err != nil {
+				ctx.Logf("Error while parsing body: %s", err)
+				return resp
+			}
+
+			var f func(*html.Node)
+
+			f = func(n *html.Node) {
+				for node := n.FirstChild; node != nil; node = node.NextSibling {
+					go f(node)
+				}
+				if n.Type == html.ElementNode {
+					if classes, ok := block2remove[n.Data]; ok {
+						//L:
+						for _, a := range n.Attr {
+							if a.Key == "class" {
+								for _, class := range classes {
+									attrClasses := strings.Split(a.Val, " ")
+									for _, ac := range attrClasses {
+										if ac == class {
+											n.Parent.RemoveChild(n)
+											//break L
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+
+			//  Parse doc
+			f(doc)
+			buff := bytes.NewBuffer([]byte{})
+			err = html.Render(buff, doc)
+			if err != nil {
+				ctx.Warnf("Error while rendering body: %s", err)
+				return resp
+			}
+			resp.Body = ioutil.NopCloser(buff)
+		}
+		return resp
+	})
+
 	log.Fatal(http.ListenAndServe(*addr, proxy))
 }

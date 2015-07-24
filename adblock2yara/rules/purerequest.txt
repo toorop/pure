@@ -15,3 +15,7 @@ ec_omniture_s_code.js
 /metro-skin.js
 /track_display_module.js
 .jobaproximite.com/sites/default/files/js/
+!/pagead/aclk?sa=L&ai=CY4C-eJewVbmbKdib3AHQw6GoBrWzu-4H5Ye8qqUC3fPqsE0QASDj-5MDYPvhhYOcCqAB4fv-_QPIAQSpAl20A5P7W7I-qAMBmAQFqgSsAU_Q-H8ZziivQ6FBTAqR9QJypstTdwVx4t53jVzikvEYNBs5DJVsl2eZdR0H_Qbs8KkLfsytkfBCC1Be7ofd_Gv_7MEcbBRwmhMlU_cyggSjFKgwGhiyzAJF_TBAMsbJs6cECpWBoItJTtn3vgrV7qlC491JWXn5Tmlr4bvbOH1IxXYy5rEoi3S5DRQvbggU0RPRaPMR6LIsaRFFVTa8q6F7XTp8Lp8E1-Ur8WqIBgGgBgSAB4eEgQKoB6a-G6gHtcEb2AcA&num=1&cid=5GjB5g3-eS9JFsspc-yAgNHrmZlO6mnt9K0a7Q&sig=AOD64_3DRNspPRLgnkwLZzsSt81fA8MdYQ&client=ca-pub-6219811747049371&adurl=http://www.meilleurechainedemagasins.fr/vote%3F%26C1%3D24%26Qpunch%3D369%26Q1a%3D1
+.linkedin.com/countserv/count/share?callback
+.pinterest.com/v1/urls/count.json
+.voxmedia.com/event?

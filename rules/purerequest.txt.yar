@@ -168,3 +168,33 @@ rule purerequest_txt_17
         $match
 }
 
+rule purerequest_txt_18
+{
+    meta:
+        description = ".linkedin.com/countserv/count/share?callback"
+    strings:
+        $match = ".linkedin.com/countserv/count/share?callback"
+    condition:
+        $match
+}
+
+rule purerequest_txt_19
+{
+    meta:
+        description = ".pinterest.com/v1/urls/count.json"
+    strings:
+        $match = ".pinterest.com/v1/urls/count.json"
+    condition:
+        $match
+}
+
+rule purerequest_txt_20
+{
+    meta:
+        description = ".voxmedia.com/event?"
+    strings:
+        $match = ".voxmedia.com/event?"
+    condition:
+        $match
+}
+
