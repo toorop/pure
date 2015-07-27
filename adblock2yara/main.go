@@ -49,7 +49,7 @@ func processFile(path string, info os.FileInfo, err error) error {
 	handleErr(err)
 	defer inFile.Close()
 
-	outFile, err := os.Create("../rules/" + info.Name() + ".yar")
+	outFile, err := os.Create("../rules/yara/" + info.Name() + ".yar")
 	handleErr(err)
 	defer outFile.Close()
 

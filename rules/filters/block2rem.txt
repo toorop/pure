@@ -1,0 +1,2 @@
+www.theverge.com#div:m-entry__sidebar,yahoo-recommends,m-linkset,m-footer,m-article__comments-section,video-wrap,m-article__share-buttons
+www.theverge.com#ul:p-entry-nav,m-header__social

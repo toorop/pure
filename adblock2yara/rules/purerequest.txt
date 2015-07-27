@@ -19,3 +19,4 @@ ec_omniture_s_code.js
 .linkedin.com/countserv/count/share?callback
 .pinterest.com/v1/urls/count.json
 .voxmedia.com/event?
+client:plusone.js

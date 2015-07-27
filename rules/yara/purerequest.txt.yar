@@ -198,3 +198,13 @@ rule purerequest_txt_20
         $match
 }
 
+rule purerequest_txt_21
+{
+    meta:
+        description = "client:plusone.js"
+    strings:
+        $match = "client:plusone.js"
+    condition:
+        $match
+}
+

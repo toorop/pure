@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"crypto/tls"
 	"flag"
@@ -50,6 +51,49 @@ PjHU2++jb8p6fBziQeqva/lmDaqJYdUWZFQ9dlxsvZp2X3kVpicNsSECQFC2W9s1
 Ut0HOxyRVMZunh4=
 -----END PRIVATE KEY-----`)
 
+// HTMLNode represents a HTML node
+type HTMLNode struct {
+	Name    string
+	Classes []string
+}
+
+// HTMLHost represents an host and its nodes
+type HTMLHost struct {
+	Name  string
+	Nodes []*HTMLNode
+}
+
+func (h *HTMLHost) getNode(nodeTofind string) *HTMLNode {
+	for _, node := range h.Nodes {
+		if node.Name == nodeTofind {
+			return node
+		}
+	}
+	return nil
+}
+
+// HTMLNodesToRemove represents a HMTL node to remove from returned content
+type HTMLNodesToRemove struct {
+	Hosts []*HTMLHost
+}
+
+// getHost return
+func (n *HTMLNodesToRemove) getHost(hostToFind string) *HTMLHost {
+	for _, host := range n.Hosts {
+		if host.Name == hostToFind {
+			return host
+		}
+	}
+	return nil
+}
+
+func (n *HTMLNodesToRemove) addNode(host string, node HTMLNode) {
+	if n.getHost(host) == nil {
+		n.Hosts = append(n.Hosts, &HTMLHost{Name: host})
+	}
+	n.getHost(host).Nodes = append(n.getHost(host).Nodes, &node)
+}
+
 func handleErr(err error) {
 	if err != nil {
 		log.Fatalln(err)
@@ -67,20 +111,46 @@ func main() {
 	c, err := yara.NewCompiler()
 	handleErr(err)
 	// Load & compile rules
-	err = filepath.Walk("rules", func(path string, info os.FileInfo, err error) error {
-		log.Println(path)
+	err = filepath.Walk("rules/yara", func(path string, info os.FileInfo, err error) error {
+		//log.Println(path)
 		if info.IsDir() {
 			return nil
 		}
-		return c.AddFile("", "rules/"+info.Name())
+		return c.AddFile("", "rules/yara/"+info.Name())
 	})
 	handleErr(err)
 
 	engine, err := c.Rules()
-	if err != nil {
-		log.Fatalln(err)
-	}
+	handleErr(err)
 	c.Destroy()
+
+	// HTML block to remove
+	block2remove := &HTMLNodesToRemove{}
+	f, err := os.Open("rules/filters/block2rem.txt")
+	handleErr(err)
+	defer f.Close()
+
+	scanner := bufio.NewScanner(f)
+	scanner.Split(bufio.ScanLines)
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		hostBlock := strings.Split(line, "#")
+		if len(hostBlock) != 2 {
+			log.Fatalln("Bad rule: " + line)
+		}
+		blockClasses := strings.Split(hostBlock[1], ":")
+		if len(blockClasses) != 2 {
+			log.Fatalln("Bad rule: " + line)
+		}
+
+		//fmt.Println(blockClasses)
+		node := HTMLNode{
+			Name:    blockClasses[0],
+			Classes: strings.Split(blockClasses[1], ","),
+		}
+		block2remove.addNode(hostBlock[0], node)
+	}
 
 	// launch proxy
 	goproxy.CertOrganisation = "Pure proxy"
@@ -93,31 +163,39 @@ func main() {
 		return user == *login && passwd == *password
 	})*/
 
-	proxy.OnRequest().HandleConnectFunc(func(host string, ctx *goproxy.ProxyCtx) (*goproxy.ConnectAction, string) {
-		//log.Println(host)
-		name := ""
-		err = engine.ScanMemory([]byte(host), func(rule *yara.Rule) yara.CallbackStatus {
-			name = rule.Identifier
-			return yara.Abort
+	/*
+		proxy.OnRequest().HandleConnectFunc(func(host string, ctx *goproxy.ProxyCtx) (*goproxy.ConnectAction, string) {
+			log.Println(host)
+			name := ""
+			err = engine.ScanMemory([]byte(host), func(rule *yara.Rule) yara.CallbackStatus {
+				name = rule.Identifier
+				return yara.Abort
+			})
+			if name != "" {
+				log.Println("REJECTED", name, host)
+				return goproxy.RejectConnect, host
+			}
+			return goproxy.OkConnect, host
 		})
-		if name != "" {
-			log.Println("REJECTED", name, host)
-			return goproxy.RejectConnect, host
-		}
-		return goproxy.OkConnect, host
-	})
+	*/
 
 	proxy.OnRequest().DoFunc(
 		func(r *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
 			//log.Println("request: " + r.RequestURI)
 			r.Header.Set("X-Pure", "0.0.1")
 			name := ""
-			err = engine.ScanMemory([]byte(r.RequestURI), func(rule *yara.Rule) yara.CallbackStatus {
+			err = engine.ScanMemory([]byte(r.Host), func(rule *yara.Rule) yara.CallbackStatus {
 				name = rule.Identifier
 				return yara.Abort
 			})
+			if name == "" {
+				err = engine.ScanMemory([]byte(r.RequestURI), func(rule *yara.Rule) yara.CallbackStatus {
+					name = rule.Identifier
+					return yara.Abort
+				})
+			}
 			if name != "" {
-				log.Println("BLOCKED", name, r.RequestURI)
+				//log.Println("BLOCKED", name, r.RequestURI)
 				return r, goproxy.NewResponse(r,
 					goproxy.ContentTypeText, http.StatusForbidden,
 					"I'm sorry, Dave. I'm afraid I can't do that.")
@@ -126,36 +204,41 @@ func main() {
 			return r, nil
 		})
 
-	// Scan response - POC for the verge
-	block2remove := make(map[string][]string)
-	block2remove["div"] = []string{"m-entry__sidebar", "yahoo-recommends", "m-linkset", "m-footer", "m-article__comments-section", "video-wrap"}
-	block2remove["ul"] = []string{"p-entry-nav", "m-header__social"}
+	// Scan response - POC
+	// TODO: refactoring
 	proxy.OnResponse().DoFunc(func(resp *http.Response, ctx *goproxy.ProxyCtx) *http.Response {
+		if resp == nil {
+			return nil
+		}
 		contentType := resp.Header.Get("content-type")
 		if strings.HasPrefix(contentType, "text/html") {
+			nodes2Remove := block2remove.getHost(ctx.Req.Host)
+			if nodes2Remove == nil {
+				return resp
+			}
 			doc, err := html.Parse(resp.Body)
 			if err != nil {
 				ctx.Logf("Error while parsing body: %s", err)
 				return resp
 			}
-
+			// we can't remove node during parsing because if if do, we do not parse all doc
+			//RemoveChild removes a node c that is a child of n. Afterwards, c will have no parent and no siblings.
+			toRemove := []*html.Node{}
 			var f func(*html.Node)
-
 			f = func(n *html.Node) {
-				for node := n.FirstChild; node != nil; node = node.NextSibling {
-					go f(node)
-				}
 				if n.Type == html.ElementNode {
-					if classes, ok := block2remove[n.Data]; ok {
-						//L:
+					// get classes of element to remove
+					nod := nodes2Remove.getNode(n.Data)
+					if nod != nil {
+					L:
 						for _, a := range n.Attr {
 							if a.Key == "class" {
-								for _, class := range classes {
+								for _, class := range nod.Classes {
 									attrClasses := strings.Split(a.Val, " ")
 									for _, ac := range attrClasses {
 										if ac == class {
-											n.Parent.RemoveChild(n)
-											//break L
+											toRemove = append(toRemove, n)
+											break L
 										}
 									}
 								}
@@ -163,10 +246,17 @@ func main() {
 						}
 					}
 				}
+				for node := n.FirstChild; node != nil; node = node.NextSibling {
+					f(node)
+				}
 			}
 
 			//  Parse doc
 			f(doc)
+			// remove block found
+			for _, n := range toRemove {
+				n.Parent.RemoveChild(n)
+			}
 			buff := bytes.NewBuffer([]byte{})
 			err = html.Render(buff, doc)
 			if err != nil {
@@ -175,6 +265,7 @@ func main() {
 			}
 			resp.Body = ioutil.NopCloser(buff)
 		}
+
 		return resp
 	})
 
