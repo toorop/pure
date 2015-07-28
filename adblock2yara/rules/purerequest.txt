@@ -20,3 +20,12 @@ ec_omniture_s_code.js
 .pinterest.com/v1/urls/count.json
 .voxmedia.com/event?
 client:plusone.js
+lmd/core/ux/sync.js
+/abonnes/redirection.js
+meter/toggle-off.js
+js/afrique/lma-cookie.js
+/kameleoon.js
+user/alerte_tracking.js
+/metrics/ignition-one.js
+/newsletter-subscription.js
+/layout/tracking/

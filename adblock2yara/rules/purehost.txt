@@ -134,3 +134,5 @@ track.ft.com
 www.googleadservices.com
 .tagsrvcs.com
 p.typekit.net
+.visualrevenue.com
+cdn.pulpix.co

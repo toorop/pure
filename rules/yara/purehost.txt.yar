@@ -1358,3 +1358,23 @@ rule purehost_txt_136
         $match
 }
 
+rule purehost_txt_137
+{
+    meta:
+        description = ".visualrevenue.com"
+    strings:
+        $match = ".visualrevenue.com"
+    condition:
+        $match
+}
+
+rule purehost_txt_138
+{
+    meta:
+        description = "cdn.pulpix.co"
+    strings:
+        $match = "cdn.pulpix.co"
+    condition:
+        $match
+}
+

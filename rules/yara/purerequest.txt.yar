@@ -208,3 +208,93 @@ rule purerequest_txt_21
         $match
 }
 
+rule purerequest_txt_22
+{
+    meta:
+        description = "lmd/core/ux/sync.js"
+    strings:
+        $match = "lmd/core/ux/sync.js"
+    condition:
+        $match
+}
+
+rule purerequest_txt_23
+{
+    meta:
+        description = "/abonnes/redirection.js"
+    strings:
+        $match = "/abonnes/redirection.js"
+    condition:
+        $match
+}
+
+rule purerequest_txt_24
+{
+    meta:
+        description = "meter/toggle-off.js"
+    strings:
+        $match = "meter/toggle-off.js"
+    condition:
+        $match
+}
+
+rule purerequest_txt_25
+{
+    meta:
+        description = "js/afrique/lma-cookie.js"
+    strings:
+        $match = "js/afrique/lma-cookie.js"
+    condition:
+        $match
+}
+
+rule purerequest_txt_26
+{
+    meta:
+        description = "/kameleoon.js"
+    strings:
+        $match = "/kameleoon.js"
+    condition:
+        $match
+}
+
+rule purerequest_txt_27
+{
+    meta:
+        description = "user/alerte_tracking.js"
+    strings:
+        $match = "user/alerte_tracking.js"
+    condition:
+        $match
+}
+
+rule purerequest_txt_28
+{
+    meta:
+        description = "/metrics/ignition-one.js"
+    strings:
+        $match = "/metrics/ignition-one.js"
+    condition:
+        $match
+}
+
+rule purerequest_txt_29
+{
+    meta:
+        description = "/newsletter-subscription.js"
+    strings:
+        $match = "/newsletter-subscription.js"
+    condition:
+        $match
+}
+
+rule purerequest_txt_30
+{
+    meta:
+        description = "/layout/tracking/"
+    strings:
+        $match = "/layout/tracking/"
+    condition:
+        $match
+}
+
