@@ -1,6 +1,11 @@
+#!/bin/bash
+
+set -e
+
 go build --ldflags '-extldflags "-static"' -o dist/pure
 #GOOS=linux GOARCH=386 CGO_ENABLED=1 go build --ldflags '-extldflags "-static"' -o dist/pure
 
+rm pure.zip
 cp -pr rules dist/
 zip -r pure.zip dist
 

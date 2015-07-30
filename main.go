@@ -10,7 +10,9 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
+	"sync"
 
 	"golang.org/x/net/html"
 
@@ -101,6 +103,7 @@ func handleErr(err error) {
 }
 
 func main() {
+	runtime.GOMAXPROCS(runtime.NumCPU())
 	verbose := flag.Bool("v", false, "should every proxy request be logged to stdout")
 	/*login := flag.String("login", "", "proxy login")
 	password := flag.String("password", "", "proxy passwd")*/
@@ -195,7 +198,7 @@ func main() {
 				})
 			}
 			if name != "" {
-				//log.Println("BLOCKED", name, r.RequestURI)
+				log.Println("BLOCKED", name, r.RequestURI)
 				return r, goproxy.NewResponse(r,
 					goproxy.ContentTypeText, http.StatusForbidden,
 					"I'm sorry, Dave. I'm afraid I can't do that.")
@@ -224,8 +227,10 @@ func main() {
 			// we can't remove node during parsing because if if do, we do not parse all doc
 			//RemoveChild removes a node c that is a child of n. Afterwards, c will have no parent and no siblings.
 			toRemove := []*html.Node{}
+			var wg sync.WaitGroup
 			var f func(*html.Node)
 			f = func(n *html.Node) {
+				wg.Add(1)
 				if n.Type == html.ElementNode {
 					// get classes of element to remove
 					nod := nodes2Remove.getNode(n.Data)
@@ -246,13 +251,17 @@ func main() {
 						}
 					}
 				}
+				wg.Done()
 				for node := n.FirstChild; node != nil; node = node.NextSibling {
-					f(node)
+					go f(node)
 				}
 			}
 
 			//  Parse doc
+			//start := time.Now()
 			f(doc)
+			wg.Wait()
+			//fmt.Printf("Elapsed %s\n", time.Since(start))
 			// remove block found
 			for _, n := range toRemove {
 				n.Parent.RemoveChild(n)
