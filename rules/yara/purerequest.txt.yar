@@ -298,3 +298,13 @@ rule purerequest_txt_30
         $match
 }
 
+rule purerequest_txt_31
+{
+    meta:
+        description = "?advertiser_name="
+    strings:
+        $match = "?advertiser_name="
+    condition:
+        $match
+}
+

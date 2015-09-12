@@ -29,3 +29,4 @@ user/alerte_tracking.js
 /metrics/ignition-one.js
 /newsletter-subscription.js
 /layout/tracking/
+?advertiser_name=

@@ -10,9 +10,11 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"strings"
 	"sync"
+	"time"
 
 	"golang.org/x/net/html"
 
@@ -52,6 +54,13 @@ PjHU2++jb8p6fBziQeqva/lmDaqJYdUWZFQ9dlxsvZp2X3kVpicNsSECQFC2W9s1
 7GySl8NLqgOaStq94uyK1rQpJxQlArqMZbi7COIlQZ0Q0r5m9aALNxXYeIs8HGJN
 Ut0HOxyRVMZunh4=
 -----END PRIVATE KEY-----`)
+
+func normalize(in string) string {
+	t := bytes.Replace([]byte(in), []byte{13}, []byte{}, -1)
+	t = bytes.Replace(t, []byte{10}, []byte{}, -1)
+	t = regexp.MustCompile(`[ \t]+`).ReplaceAll(t, []byte(" "))
+	return string(t)
+}
 
 // HTMLNode represents a HTML node
 type HTMLNode struct {
@@ -94,6 +103,42 @@ func (n *HTMLNodesToRemove) addNode(host string, node HTMLNode) {
 		n.Hosts = append(n.Hosts, &HTMLHost{Name: host})
 	}
 	n.getHost(host).Nodes = append(n.getHost(host).Nodes, &node)
+}
+
+type CSSByHost struct {
+	Name       string
+	CSS2Inject []string
+}
+
+type FilterCSSToInject struct {
+	Hosts []*CSSByHost
+}
+
+func (f *FilterCSSToInject) GetHost(hostname string) *CSSByHost {
+	for _, host := range f.Hosts {
+		if host.Name == hostname {
+			return host
+		}
+	}
+	return nil
+}
+
+func (f *FilterCSSToInject) GetCSS2InjectForHost(hostname string) string {
+	if h := f.GetHost(hostname); h != nil {
+		return strings.Join(h.CSS2Inject, ";")
+	}
+	return ""
+}
+
+func (f *FilterCSSToInject) AddCSS(hostname, css string) {
+	if h := f.GetHost(hostname); h != nil {
+		h.CSS2Inject = append(h.CSS2Inject, css)
+	} else {
+		f.Hosts = append(f.Hosts, &CSSByHost{
+			Name:       hostname,
+			CSS2Inject: []string{css},
+		})
+	}
 }
 
 func handleErr(err error) {
@@ -155,6 +200,24 @@ func main() {
 		block2remove.addNode(hostBlock[0], node)
 	}
 
+	// Injected CSS
+	CSS2Inject := &FilterCSSToInject{}
+	f, err = os.Open("rules/filters/css2inject.txt")
+	handleErr(err)
+	defer f.Close()
+
+	scanner = bufio.NewScanner(f)
+	scanner.Split(bufio.ScanLines)
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		hostCSS := strings.Split(line, "|")
+		if len(hostCSS) != 2 {
+			log.Fatalln("Bad CSS rule: " + line)
+		}
+		CSS2Inject.AddCSS(hostCSS[0], hostCSS[1])
+	}
+
 	// launch proxy
 	goproxy.CertOrganisation = "Pure proxy"
 	goproxy.GoproxyCa, err = tls.X509KeyPair(CA_CERT, CA_KEY)
@@ -185,7 +248,7 @@ func main() {
 	proxy.OnRequest().DoFunc(
 		func(r *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
 			//log.Println("request: " + r.RequestURI)
-			r.Header.Set("X-Pure", "0.0.1")
+			//r.Header.Set("X-Pure", "0.0.1")
 			name := ""
 			err = engine.ScanMemory([]byte(r.Host), func(rule *yara.Rule) yara.CallbackStatus {
 				name = rule.Identifier
@@ -214,17 +277,20 @@ func main() {
 			return nil
 		}
 		contentType := resp.Header.Get("content-type")
+
+		// http
 		if strings.HasPrefix(contentType, "text/html") {
 			nodes2Remove := block2remove.getHost(ctx.Req.Host)
 			if nodes2Remove == nil {
 				return resp
 			}
+			log.Println("On remove des nodes pour cet host")
 			doc, err := html.Parse(resp.Body)
 			if err != nil {
 				ctx.Logf("Error while parsing body: %s", err)
 				return resp
 			}
-			// we can't remove node during parsing because if if do, we do not parse all doc
+			// we can't remove node during parsing because if we do it, we do not parse all doc
 			//RemoveChild removes a node c that is a child of n. Afterwards, c will have no parent and no siblings.
 			toRemove := []*html.Node{}
 			var wg sync.WaitGroup
@@ -239,10 +305,14 @@ func main() {
 						for _, a := range n.Attr {
 							if a.Key == "class" {
 								for _, class := range nod.Classes {
+									// clean no.Class
+									a.Val = normalize(a.Val)
+									//log.Println("LES CLASSES RAW", a.Val)
 									attrClasses := strings.Split(a.Val, " ")
 									for _, ac := range attrClasses {
 										if ac == class {
 											toRemove = append(toRemove, n)
+											//log.Println("dans la boucle", toRemove)
 											break L
 										}
 									}
@@ -251,18 +321,24 @@ func main() {
 						}
 					}
 				}
-				wg.Done()
+				//wg.Done()
 				for node := n.FirstChild; node != nil; node = node.NextSibling {
 					go f(node)
 				}
+				wg.Done()
 			}
 
 			//  Parse doc
 			//start := time.Now()
 			f(doc)
+			time.Sleep(time.Duration(10) * time.Millisecond)
+
+			//log.Println("START WAIT")
 			wg.Wait()
+			//log.Println("STOP WAIT")
 			//fmt.Printf("Elapsed %s\n", time.Since(start))
 			// remove block found
+			//log.Println("TO REMOVE:", toRemove)
 			for _, n := range toRemove {
 				n.Parent.RemoveChild(n)
 			}
@@ -273,6 +349,44 @@ func main() {
 				return resp
 			}
 			resp.Body = ioutil.NopCloser(buff)
+		} else if strings.HasPrefix(contentType, "text/css") {
+			// inject css ?
+			CSS := CSS2Inject.GetCSS2InjectForHost(ctx.Req.Host)
+			if CSS != "" {
+				// read body
+				body, err := ioutil.ReadAll(resp.Body)
+				if err != nil {
+					ctx.Warnf("Pure - ERROR while reading body: %s", err)
+					return resp
+				}
+				body = append(body, []byte(CSS)...)
+				resp.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+				//HOST www.google.frCONTENT TYPEapplication/json; charset=UTF-8
+
+			}
+		} else if strings.HasPrefix(contentType, "application/json") {
+			//log.Println("ON A DU JSON SUR " + ctx.Req.Host)
+			if ctx.Req.Host == "www.google.fr" {
+				//log.Println("Du JSON GOOGLE")
+				// read body
+				body, err := ioutil.ReadAll(resp.Body)
+				if err != nil {
+					ctx.Warnf("Pure - ERROR while reading body: %s", err)
+					return resp
+				}
+				bodyPart := strings.Split(string(body), `/*""*/`)
+				t := ""
+				for _, p := range bodyPart {
+					if strings.Contains(p, "commercial-unit") || strings.Contains(p, "tadsb") {
+						//log.Println("On fait sauter un bloc")
+						continue
+					}
+					t = t + p + `/*""*/`
+				}
+				body = []byte(t)
+
+				resp.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+			}
 		}
 
 		return resp

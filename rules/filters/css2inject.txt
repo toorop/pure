@@ -1,0 +1,2 @@
+www.google.fr|.ads-ad{display: none;}
+plus.google.com|.commercial-unit{display: none;}
