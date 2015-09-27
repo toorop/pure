@@ -241,16 +241,6 @@ rule purehost_txt_24
 rule purehost_txt_25
 {
     meta:
-        description = ".dmcdn.net"
-    strings:
-        $match = ".dmcdn.net"
-    condition:
-        $match
-}
-
-rule purehost_txt_26
-{
-    meta:
         description = ".doubleclick.net"
     strings:
         $match = ".doubleclick.net"
@@ -258,7 +248,7 @@ rule purehost_txt_26
         $match
 }
 
-rule purehost_txt_27
+rule purehost_txt_26
 {
     meta:
         description = ".dpmsrv.com"
@@ -268,7 +258,7 @@ rule purehost_txt_27
         $match
 }
 
-rule purehost_txt_28
+rule purehost_txt_27
 {
     meta:
         description = ".dwin2.com"
@@ -278,7 +268,7 @@ rule purehost_txt_28
         $match
 }
 
-rule purehost_txt_29
+rule purehost_txt_28
 {
     meta:
         description = ".easydmp.net"
@@ -288,7 +278,7 @@ rule purehost_txt_29
         $match
 }
 
-rule purehost_txt_30
+rule purehost_txt_29
 {
     meta:
         description = ".ebz.io"
@@ -298,7 +288,7 @@ rule purehost_txt_30
         $match
 }
 
-rule purehost_txt_31
+rule purehost_txt_30
 {
     meta:
         description = ".edi7.lu"
@@ -308,7 +298,7 @@ rule purehost_txt_31
         $match
 }
 
-rule purehost_txt_32
+rule purehost_txt_31
 {
     meta:
         description = ".effectivemeasure.net"
@@ -318,7 +308,7 @@ rule purehost_txt_32
         $match
 }
 
-rule purehost_txt_33
+rule purehost_txt_32
 {
     meta:
         description = ".effitarget.com"
@@ -328,7 +318,7 @@ rule purehost_txt_33
         $match
 }
 
-rule purehost_txt_34
+rule purehost_txt_33
 {
     meta:
         description = ".elasticad.net"
@@ -338,7 +328,7 @@ rule purehost_txt_34
         $match
 }
 
-rule purehost_txt_35
+rule purehost_txt_34
 {
     meta:
         description = ".email-match.com"
@@ -348,7 +338,7 @@ rule purehost_txt_35
         $match
 }
 
-rule purehost_txt_36
+rule purehost_txt_35
 {
     meta:
         description = ".emediate.eu"
@@ -358,7 +348,7 @@ rule purehost_txt_36
         $match
 }
 
-rule purehost_txt_37
+rule purehost_txt_36
 {
     meta:
         description = ".estat.com"
@@ -368,7 +358,7 @@ rule purehost_txt_37
         $match
 }
 
-rule purehost_txt_38
+rule purehost_txt_37
 {
     meta:
         description = ".ezakus.net"
@@ -378,7 +368,7 @@ rule purehost_txt_38
         $match
 }
 
-rule purehost_txt_39
+rule purehost_txt_38
 {
     meta:
         description = ".g.doubleclick.net"
@@ -388,7 +378,7 @@ rule purehost_txt_39
         $match
 }
 
-rule purehost_txt_40
+rule purehost_txt_39
 {
     meta:
         description = ".gigya.com"
@@ -398,7 +388,7 @@ rule purehost_txt_40
         $match
 }
 
-rule purehost_txt_41
+rule purehost_txt_40
 {
     meta:
         description = ".go-mpulse.net"
@@ -408,7 +398,7 @@ rule purehost_txt_41
         $match
 }
 
-rule purehost_txt_42
+rule purehost_txt_41
 {
     meta:
         description = ".googletagmanager.com"
@@ -418,7 +408,7 @@ rule purehost_txt_42
         $match
 }
 
-rule purehost_txt_43
+rule purehost_txt_42
 {
     meta:
         description = ".googletagservices.com"
@@ -428,7 +418,7 @@ rule purehost_txt_43
         $match
 }
 
-rule purehost_txt_44
+rule purehost_txt_43
 {
     meta:
         description = ".horyzon-media.com"
@@ -438,7 +428,7 @@ rule purehost_txt_44
         $match
 }
 
-rule purehost_txt_45
+rule purehost_txt_44
 {
     meta:
         description = ".hotjar.com"
@@ -448,7 +438,7 @@ rule purehost_txt_45
         $match
 }
 
-rule purehost_txt_46
+rule purehost_txt_45
 {
     meta:
         description = ".icoa.com"
@@ -458,7 +448,7 @@ rule purehost_txt_46
         $match
 }
 
-rule purehost_txt_47
+rule purehost_txt_46
 {
     meta:
         description = ".intellitxt.com"
@@ -468,7 +458,7 @@ rule purehost_txt_47
         $match
 }
 
-rule purehost_txt_48
+rule purehost_txt_47
 {
     meta:
         description = ".janrain.com"
@@ -478,7 +468,7 @@ rule purehost_txt_48
         $match
 }
 
-rule purehost_txt_49
+rule purehost_txt_48
 {
     meta:
         description = ".krxd.net"
@@ -488,7 +478,7 @@ rule purehost_txt_49
         $match
 }
 
-rule purehost_txt_50
+rule purehost_txt_49
 {
     meta:
         description = ".ligatus.com"
@@ -498,7 +488,7 @@ rule purehost_txt_50
         $match
 }
 
-rule purehost_txt_51
+rule purehost_txt_50
 {
     meta:
         description = ".livefyre.com"
@@ -508,7 +498,7 @@ rule purehost_txt_51
         $match
 }
 
-rule purehost_txt_52
+rule purehost_txt_51
 {
     meta:
         description = ".liverail.com"
@@ -518,7 +508,7 @@ rule purehost_txt_52
         $match
 }
 
-rule purehost_txt_53
+rule purehost_txt_52
 {
     meta:
         description = ".mathtag.com"
@@ -528,7 +518,7 @@ rule purehost_txt_53
         $match
 }
 
-rule purehost_txt_54
+rule purehost_txt_53
 {
     meta:
         description = ".maxymiser.net"
@@ -538,7 +528,7 @@ rule purehost_txt_54
         $match
 }
 
-rule purehost_txt_55
+rule purehost_txt_54
 {
     meta:
         description = ".mediabong.com"
@@ -548,7 +538,7 @@ rule purehost_txt_55
         $match
 }
 
-rule purehost_txt_56
+rule purehost_txt_55
 {
     meta:
         description = ".metaffiliation.com"
@@ -558,7 +548,7 @@ rule purehost_txt_56
         $match
 }
 
-rule purehost_txt_57
+rule purehost_txt_56
 {
     meta:
         description = ".mixpanel.com"
@@ -568,7 +558,7 @@ rule purehost_txt_57
         $match
 }
 
-rule purehost_txt_58
+rule purehost_txt_57
 {
     meta:
         description = ".moatads.com"
@@ -578,7 +568,7 @@ rule purehost_txt_58
         $match
 }
 
-rule purehost_txt_59
+rule purehost_txt_58
 {
     meta:
         description = ".mpstat.us"
@@ -588,7 +578,7 @@ rule purehost_txt_59
         $match
 }
 
-rule purehost_txt_60
+rule purehost_txt_59
 {
     meta:
         description = ".msecnd.net"
@@ -598,7 +588,7 @@ rule purehost_txt_60
         $match
 }
 
-rule purehost_txt_61
+rule purehost_txt_60
 {
     meta:
         description = ".natoms.com"
@@ -608,7 +598,7 @@ rule purehost_txt_61
         $match
 }
 
-rule purehost_txt_62
+rule purehost_txt_61
 {
     meta:
         description = ".newrelic.com"
@@ -618,7 +608,7 @@ rule purehost_txt_62
         $match
 }
 
-rule purehost_txt_63
+rule purehost_txt_62
 {
     meta:
         description = ".nr-data.net"
@@ -628,7 +618,7 @@ rule purehost_txt_63
         $match
 }
 
-rule purehost_txt_64
+rule purehost_txt_63
 {
     meta:
         description = ".nuggad.net"
@@ -638,7 +628,7 @@ rule purehost_txt_64
         $match
 }
 
-rule purehost_txt_65
+rule purehost_txt_64
 {
     meta:
         description = ".omnitagjs.com"
@@ -648,7 +638,7 @@ rule purehost_txt_65
         $match
 }
 
-rule purehost_txt_66
+rule purehost_txt_65
 {
     meta:
         description = ".optimizely.com"
@@ -658,7 +648,7 @@ rule purehost_txt_66
         $match
 }
 
-rule purehost_txt_67
+rule purehost_txt_66
 {
     meta:
         description = ".outbrain.com"
@@ -668,7 +658,7 @@ rule purehost_txt_67
         $match
 }
 
-rule purehost_txt_68
+rule purehost_txt_67
 {
     meta:
         description = ".parsely.com"
@@ -678,7 +668,7 @@ rule purehost_txt_68
         $match
 }
 
-rule purehost_txt_69
+rule purehost_txt_68
 {
     meta:
         description = ".perfectmarket.com"
@@ -688,7 +678,7 @@ rule purehost_txt_69
         $match
 }
 
-rule purehost_txt_70
+rule purehost_txt_69
 {
     meta:
         description = ".pingdom.net"
@@ -698,7 +688,7 @@ rule purehost_txt_70
         $match
 }
 
-rule purehost_txt_71
+rule purehost_txt_70
 {
     meta:
         description = ".po.st"
@@ -708,7 +698,7 @@ rule purehost_txt_71
         $match
 }
 
-rule purehost_txt_72
+rule purehost_txt_71
 {
     meta:
         description = ".pointroll.com"
@@ -718,7 +708,7 @@ rule purehost_txt_72
         $match
 }
 
-rule purehost_txt_73
+rule purehost_txt_72
 {
     meta:
         description = ".pollonize.com"
@@ -728,7 +718,7 @@ rule purehost_txt_73
         $match
 }
 
-rule purehost_txt_74
+rule purehost_txt_73
 {
     meta:
         description = ".polluxnetwork.com"
@@ -738,7 +728,7 @@ rule purehost_txt_74
         $match
 }
 
-rule purehost_txt_75
+rule purehost_txt_74
 {
     meta:
         description = ".postrelease.com"
@@ -748,7 +738,7 @@ rule purehost_txt_75
         $match
 }
 
-rule purehost_txt_76
+rule purehost_txt_75
 {
     meta:
         description = ".pubdirecte.com"
@@ -758,7 +748,7 @@ rule purehost_txt_76
         $match
 }
 
-rule purehost_txt_77
+rule purehost_txt_76
 {
     meta:
         description = ".pxl2015x1.com"
@@ -768,7 +758,7 @@ rule purehost_txt_77
         $match
 }
 
-rule purehost_txt_78
+rule purehost_txt_77
 {
     meta:
         description = ".quantserve.com"
@@ -778,7 +768,7 @@ rule purehost_txt_78
         $match
 }
 
-rule purehost_txt_79
+rule purehost_txt_78
 {
     meta:
         description = ".qubitproducts.com"
@@ -788,7 +778,7 @@ rule purehost_txt_79
         $match
 }
 
-rule purehost_txt_80
+rule purehost_txt_79
 {
     meta:
         description = ".questionmarket.com"
@@ -798,7 +788,7 @@ rule purehost_txt_80
         $match
 }
 
-rule purehost_txt_81
+rule purehost_txt_80
 {
     meta:
         description = ".revsci.net"
@@ -808,7 +798,7 @@ rule purehost_txt_81
         $match
 }
 
-rule purehost_txt_82
+rule purehost_txt_81
 {
     meta:
         description = ".sail-horizon.com"
@@ -818,7 +808,7 @@ rule purehost_txt_82
         $match
 }
 
-rule purehost_txt_83
+rule purehost_txt_82
 {
     meta:
         description = ".scribblelive.com"
@@ -828,7 +818,7 @@ rule purehost_txt_83
         $match
 }
 
-rule purehost_txt_84
+rule purehost_txt_83
 {
     meta:
         description = ".sddan.com"
@@ -838,7 +828,7 @@ rule purehost_txt_84
         $match
 }
 
-rule purehost_txt_85
+rule purehost_txt_84
 {
     meta:
         description = ".servebom.com"
@@ -848,7 +838,7 @@ rule purehost_txt_85
         $match
 }
 
-rule purehost_txt_86
+rule purehost_txt_85
 {
     meta:
         description = ".servedbyopenx.com"
@@ -858,7 +848,7 @@ rule purehost_txt_86
         $match
 }
 
-rule purehost_txt_87
+rule purehost_txt_86
 {
     meta:
         description = ".serving-sys.com"
@@ -868,7 +858,7 @@ rule purehost_txt_87
         $match
 }
 
-rule purehost_txt_88
+rule purehost_txt_87
 {
     meta:
         description = ".skimresources.com"
@@ -878,7 +868,7 @@ rule purehost_txt_88
         $match
 }
 
-rule purehost_txt_89
+rule purehost_txt_88
 {
     meta:
         description = ".smartadserver.com"
@@ -888,7 +878,7 @@ rule purehost_txt_89
         $match
 }
 
-rule purehost_txt_90
+rule purehost_txt_89
 {
     meta:
         description = ".sonobi.com"
@@ -898,7 +888,7 @@ rule purehost_txt_90
         $match
 }
 
-rule purehost_txt_91
+rule purehost_txt_90
 {
     meta:
         description = ".sub2tech.com"
@@ -908,7 +898,7 @@ rule purehost_txt_91
         $match
 }
 
-rule purehost_txt_92
+rule purehost_txt_91
 {
     meta:
         description = ".symcb.com"
@@ -918,7 +908,7 @@ rule purehost_txt_92
         $match
 }
 
-rule purehost_txt_93
+rule purehost_txt_92
 {
     meta:
         description = ".taboola.com"
@@ -928,7 +918,7 @@ rule purehost_txt_93
         $match
 }
 
-rule purehost_txt_94
+rule purehost_txt_93
 {
     meta:
         description = ".taboolasyndication.com"
@@ -938,7 +928,7 @@ rule purehost_txt_94
         $match
 }
 
-rule purehost_txt_95
+rule purehost_txt_94
 {
     meta:
         description = ".theadex.com"
@@ -948,7 +938,7 @@ rule purehost_txt_95
         $match
 }
 
-rule purehost_txt_96
+rule purehost_txt_95
 {
     meta:
         description = ".tradelab.fr"
@@ -958,7 +948,7 @@ rule purehost_txt_96
         $match
 }
 
-rule purehost_txt_97
+rule purehost_txt_96
 {
     meta:
         description = ".truste.com"
@@ -968,7 +958,7 @@ rule purehost_txt_97
         $match
 }
 
-rule purehost_txt_98
+rule purehost_txt_97
 {
     meta:
         description = ".uaredesign.com"
@@ -978,7 +968,7 @@ rule purehost_txt_98
         $match
 }
 
-rule purehost_txt_99
+rule purehost_txt_98
 {
     meta:
         description = ".ultimedia.com"
@@ -988,7 +978,7 @@ rule purehost_txt_99
         $match
 }
 
-rule purehost_txt_100
+rule purehost_txt_99
 {
     meta:
         description = ".usabilla.com"
@@ -998,7 +988,7 @@ rule purehost_txt_100
         $match
 }
 
-rule purehost_txt_101
+rule purehost_txt_100
 {
     meta:
         description = ".videoadex.com"
@@ -1008,7 +998,7 @@ rule purehost_txt_101
         $match
 }
 
-rule purehost_txt_102
+rule purehost_txt_101
 {
     meta:
         description = ".videostep.com"
@@ -1018,7 +1008,7 @@ rule purehost_txt_102
         $match
 }
 
-rule purehost_txt_103
+rule purehost_txt_102
 {
     meta:
         description = ".visualstudio.com"
@@ -1028,7 +1018,7 @@ rule purehost_txt_103
         $match
 }
 
-rule purehost_txt_104
+rule purehost_txt_103
 {
     meta:
         description = ".vshop.fr"
@@ -1038,7 +1028,7 @@ rule purehost_txt_104
         $match
 }
 
-rule purehost_txt_105
+rule purehost_txt_104
 {
     meta:
         description = ".weborama.fr"
@@ -1048,7 +1038,7 @@ rule purehost_txt_105
         $match
 }
 
-rule purehost_txt_106
+rule purehost_txt_105
 {
     meta:
         description = ".xiti.com"
@@ -1058,7 +1048,7 @@ rule purehost_txt_106
         $match
 }
 
-rule purehost_txt_107
+rule purehost_txt_106
 {
     meta:
         description = ".yieldoptimizer.com"
@@ -1068,7 +1058,7 @@ rule purehost_txt_107
         $match
 }
 
-rule purehost_txt_108
+rule purehost_txt_107
 {
     meta:
         description = "ad.prismamediadigital.com"
@@ -1078,7 +1068,7 @@ rule purehost_txt_108
         $match
 }
 
-rule purehost_txt_109
+rule purehost_txt_108
 {
     meta:
         description = "adlooxtracking.com"
@@ -1088,7 +1078,7 @@ rule purehost_txt_109
         $match
 }
 
-rule purehost_txt_110
+rule purehost_txt_109
 {
     meta:
         description = "adnext.fr"
@@ -1098,7 +1088,7 @@ rule purehost_txt_110
         $match
 }
 
-rule purehost_txt_111
+rule purehost_txt_110
 {
     meta:
         description = "ads.yahoo.com"
@@ -1108,7 +1098,7 @@ rule purehost_txt_111
         $match
 }
 
-rule purehost_txt_112
+rule purehost_txt_111
 {
     meta:
         description = "banners."
@@ -1118,7 +1108,7 @@ rule purehost_txt_112
         $match
 }
 
-rule purehost_txt_113
+rule purehost_txt_112
 {
     meta:
         description = "banniere."
@@ -1128,7 +1118,7 @@ rule purehost_txt_113
         $match
 }
 
-rule purehost_txt_114
+rule purehost_txt_113
 {
     meta:
         description = "blive_us-lh.akamaihd.net"
@@ -1138,7 +1128,7 @@ rule purehost_txt_114
         $match
 }
 
-rule purehost_txt_115
+rule purehost_txt_114
 {
     meta:
         description = "edigitalsurvey.com"
@@ -1148,7 +1138,7 @@ rule purehost_txt_115
         $match
 }
 
-rule purehost_txt_116
+rule purehost_txt_115
 {
     meta:
         description = "event.etam.com"
@@ -1158,7 +1148,7 @@ rule purehost_txt_116
         $match
 }
 
-rule purehost_txt_117
+rule purehost_txt_116
 {
     meta:
         description = "google-analytics.com"
@@ -1168,7 +1158,7 @@ rule purehost_txt_117
         $match
 }
 
-rule purehost_txt_118
+rule purehost_txt_117
 {
     meta:
         description = "googleadservices.com"
@@ -1178,7 +1168,7 @@ rule purehost_txt_118
         $match
 }
 
-rule purehost_txt_119
+rule purehost_txt_118
 {
     meta:
         description = "googlesyndication.com"
@@ -1188,7 +1178,7 @@ rule purehost_txt_119
         $match
 }
 
-rule purehost_txt_120
+rule purehost_txt_119
 {
     meta:
         description = ".googlesyndication.com"
@@ -1198,7 +1188,7 @@ rule purehost_txt_120
         $match
 }
 
-rule purehost_txt_121
+rule purehost_txt_120
 {
     meta:
         description = "graph.facebook.com"
@@ -1208,7 +1198,7 @@ rule purehost_txt_121
         $match
 }
 
-rule purehost_txt_122
+rule purehost_txt_121
 {
     meta:
         description = "gscontxt.net"
@@ -1218,7 +1208,7 @@ rule purehost_txt_122
         $match
 }
 
-rule purehost_txt_123
+rule purehost_txt_122
 {
     meta:
         description = "hitcount."
@@ -1228,7 +1218,7 @@ rule purehost_txt_123
         $match
 }
 
-rule purehost_txt_124
+rule purehost_txt_123
 {
     meta:
         description = "js-agent.newrelic.com"
@@ -1238,7 +1228,7 @@ rule purehost_txt_124
         $match
 }
 
-rule purehost_txt_125
+rule purehost_txt_124
 {
     meta:
         description = "metrics.cnn.com"
@@ -1248,7 +1238,7 @@ rule purehost_txt_125
         $match
 }
 
-rule purehost_txt_126
+rule purehost_txt_125
 {
     meta:
         description = "nxtck.com"
@@ -1258,7 +1248,7 @@ rule purehost_txt_126
         $match
 }
 
-rule purehost_txt_127
+rule purehost_txt_126
 {
     meta:
         description = "redintelligence.net"
@@ -1268,7 +1258,7 @@ rule purehost_txt_127
         $match
 }
 
-rule purehost_txt_128
+rule purehost_txt_127
 {
     meta:
         description = "rubiconproject.com"
@@ -1278,7 +1268,7 @@ rule purehost_txt_128
         $match
 }
 
-rule purehost_txt_129
+rule purehost_txt_128
 {
     meta:
         description = "scorecardresearch.com"
@@ -1288,7 +1278,7 @@ rule purehost_txt_129
         $match
 }
 
-rule purehost_txt_130
+rule purehost_txt_129
 {
     meta:
         description = "tags.bkrtx.com"
@@ -1298,7 +1288,7 @@ rule purehost_txt_130
         $match
 }
 
-rule purehost_txt_131
+rule purehost_txt_130
 {
     meta:
         description = "tags.tiqcdn.com"
@@ -1308,7 +1298,7 @@ rule purehost_txt_131
         $match
 }
 
-rule purehost_txt_132
+rule purehost_txt_131
 {
     meta:
         description = "tailtarget.com"
@@ -1318,7 +1308,7 @@ rule purehost_txt_132
         $match
 }
 
-rule purehost_txt_133
+rule purehost_txt_132
 {
     meta:
         description = "track.ft.com"
@@ -1328,7 +1318,7 @@ rule purehost_txt_133
         $match
 }
 
-rule purehost_txt_134
+rule purehost_txt_133
 {
     meta:
         description = "www.googleadservices.com"
@@ -1338,7 +1328,7 @@ rule purehost_txt_134
         $match
 }
 
-rule purehost_txt_135
+rule purehost_txt_134
 {
     meta:
         description = ".tagsrvcs.com"
@@ -1348,7 +1338,7 @@ rule purehost_txt_135
         $match
 }
 
-rule purehost_txt_136
+rule purehost_txt_135
 {
     meta:
         description = "p.typekit.net"
@@ -1358,7 +1348,7 @@ rule purehost_txt_136
         $match
 }
 
-rule purehost_txt_137
+rule purehost_txt_136
 {
     meta:
         description = ".visualrevenue.com"
@@ -1368,7 +1358,7 @@ rule purehost_txt_137
         $match
 }
 
-rule purehost_txt_138
+rule purehost_txt_137
 {
     meta:
         description = "cdn.pulpix.co"

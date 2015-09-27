@@ -247,7 +247,7 @@ func main() {
 
 	proxy.OnRequest().DoFunc(
 		func(r *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
-			//log.Println("request: " + r.RequestURI)
+			log.Println("REQUEST: " + r.Method + " " + r.URL.String())
 			//r.Header.Set("X-Pure", "0.0.1")
 			name := ""
 			err = engine.ScanMemory([]byte(r.Host), func(rule *yara.Rule) yara.CallbackStatus {
@@ -293,7 +293,7 @@ func main() {
 			// we can't remove node during parsing because if we do it, we do not parse all doc
 			//RemoveChild removes a node c that is a child of n. Afterwards, c will have no parent and no siblings.
 			toRemove := []*html.Node{}
-			var wg sync.WaitGroup
+			wg := sync.WaitGroup{}
 			var f func(*html.Node)
 			f = func(n *html.Node) {
 				wg.Add(1)
@@ -331,7 +331,8 @@ func main() {
 			//  Parse doc
 			//start := time.Now()
 			f(doc)
-			time.Sleep(time.Duration(10) * time.Millisecond)
+			// Really bad hack....
+			time.Sleep(time.Duration(100) * time.Millisecond)
 
 			//log.Println("START WAIT")
 			wg.Wait()

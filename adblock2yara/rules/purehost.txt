@@ -22,7 +22,6 @@
 .chartbeat.net
 .criteo.com
 .criteo.net
-.dmcdn.net
 .doubleclick.net
 .dpmsrv.com
 .dwin2.com
