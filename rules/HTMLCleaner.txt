@@ -1,0 +1,13 @@
+# host:selector:class1,class2,[class,....]
+# * is the wildcard
+# host:*:class3
+# *:*:class4
+
+www.theverge.com:div:m-entry__sidebar,yahoo-recommends,m-linkset,m-footer,m-article__comments-section,video-wrap,m-article__share-buttons
+www.theverge.com:ul:p-entry-nav,m-header__social
+www.lemonde.fr:div:position_pub
+twitter.com:div:promoted-tweet,promoted-account,promoted-trend
+www.google.fr:div:commercial-unit
+www.google.fr:li:ads-ad
+www.lesechos.fr:aside:paywall-fx,right
+www.lemonde.fr:div:col_droite
