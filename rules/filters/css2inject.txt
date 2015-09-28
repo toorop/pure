@@ -1,2 +1,4 @@
 www.google.fr|.ads-ad{display: none;}
 plus.google.com|.commercial-unit{display: none;}
+www.theverge.com|.m-article__entry-container{width: inherit!important;}
+cdn0.vox-cdn.com|.m-article__entry-container{width: inherit!important;}

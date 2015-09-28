@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"bytes"
 	"crypto/tls"
 	"flag"
@@ -13,10 +12,6 @@ import (
 	"regexp"
 	"runtime"
 	"strings"
-	"sync"
-	"time"
-
-	"golang.org/x/net/html"
 
 	lru "github.com/hashicorp/golang-lru"
 	"github.com/toorop/goproxy"
@@ -141,33 +136,10 @@ func main() {
 	handleErr(err)
 	c.Destroy()
 
-	// HTML block to remove
-	block2remove := &HTMLNodesToRemove{}
-	f, err := os.Open("rules/filters/block2rem.txt")
+	// HTML cleaners
+	htmlCleaner := NewHTMLCleaner()
+	err = htmlCleaner.LoadRulesFromFile("rules/HTMLCleaner.txt")
 	handleErr(err)
-	defer f.Close()
-
-	scanner := bufio.NewScanner(f)
-	scanner.Split(bufio.ScanLines)
-
-	for scanner.Scan() {
-		line := scanner.Text()
-		hostBlock := strings.Split(line, "#")
-		if len(hostBlock) != 2 {
-			log.Fatalln("Bad rule: " + line)
-		}
-		blockClasses := strings.Split(hostBlock[1], ":")
-		if len(blockClasses) != 2 {
-			log.Fatalln("Bad rule: " + line)
-		}
-
-		//fmt.Println(blockClasses)
-		node := HTMLNode{
-			Name:    blockClasses[0],
-			Classes: strings.Split(blockClasses[1], ","),
-		}
-		block2remove.addNode(hostBlock[0], node)
-	}
 
 	// CSS injector
 	cssInjector := NewCSSInjector()
@@ -192,7 +164,6 @@ func main() {
 	}
 	var AlwaysMitm goproxy.FuncHttpsHandler = func(host string, ctx *goproxy.ProxyCtx) (
 		*goproxy.ConnectAction, string) {
-
 		return MitmConnect, host
 	}
 
@@ -252,80 +223,9 @@ func main() {
 
 		// http
 		if strings.HasPrefix(contentType, "text/html") {
-
-			nodes2Remove := block2remove.getHost(ctx.Req.Host)
-			if nodes2Remove == nil {
-				return resp
-			}
-			log.Println("On remove des nodes pour cet host")
-			doc, err := html.Parse(resp.Body)
-			if err != nil {
-				ctx.Logf("Error while parsing body: %s", err)
-				return resp
-			}
-			// we can't remove node during parsing because if we do it, we do not parse all doc
-			//RemoveChild removes a node c that is a child of n. Afterwards, c will have no parent and no siblings.
-			toRemove := []*html.Node{}
-			wg := sync.WaitGroup{}
-			var f func(*html.Node)
-			f = func(n *html.Node) {
-				wg.Add(1)
-				if n.Type == html.ElementNode {
-					// get classes of element to remove
-					nod := nodes2Remove.getNode(n.Data)
-					if nod != nil {
-					L:
-						for _, a := range n.Attr {
-							if a.Key == "class" {
-								for _, class := range nod.Classes {
-									// clean no.Class
-									a.Val = normalize(a.Val)
-									//log.Println("LES CLASSES RAW", a.Val)
-									attrClasses := strings.Split(a.Val, " ")
-									for _, ac := range attrClasses {
-										if ac == class {
-											toRemove = append(toRemove, n)
-											//log.Println("dans la boucle", toRemove)
-											break L
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-				//wg.Done()
-				for node := n.FirstChild; node != nil; node = node.NextSibling {
-					go f(node)
-				}
-				wg.Done()
-			}
-
-			//  Parse doc
-			//start := time.Now()
-			f(doc)
-			// Really bad hack....
-			time.Sleep(time.Duration(100) * time.Millisecond)
-
-			//log.Println("START WAIT")
-			wg.Wait()
-			//log.Println("STOP WAIT")
-			//fmt.Printf("Elapsed %s\n", time.Since(start))
-			// remove block found
-			//log.Println("TO REMOVE:", toRemove)
-			for _, n := range toRemove {
-				n.Parent.RemoveChild(n)
-			}
-			buff := bytes.NewBuffer([]byte{})
-			err = html.Render(buff, doc)
-			if err != nil {
-				ctx.Warnf("Error while rendering body: %s", err)
-				return resp
-			}
-			resp.Body = ioutil.NopCloser(buff)
+			resp.Body = htmlCleaner.Clean(resp.Body, ctx.Req.Host)
 		} else if strings.HasPrefix(contentType, "text/css") {
-			// inject css ?
-			resp.Body, err = cssInjector.Inject(resp.Body, ctx.Req.Host)
+			resp.Body = cssInjector.Inject(resp.Body, ctx.Req.Host)
 		} else if strings.HasPrefix(contentType, "application/json") {
 			// POC remove google ads on search
 			if ctx.Req.Host == "www.google.fr" {
@@ -352,6 +252,5 @@ func main() {
 
 		return resp
 	})
-
 	log.Fatal(http.ListenAndServe(*addr, proxy))
 }
