@@ -109,43 +109,6 @@ func (n *HTMLNodesToRemove) addNode(host string, node HTMLNode) {
 	n.getHost(host).Nodes = append(n.getHost(host).Nodes, &node)
 }
 
-// TODO map[string][]string
-type CSSByHost struct {
-	Name       string
-	CSS2Inject []string
-}
-
-type FilterCSSToInject struct {
-	Hosts []*CSSByHost
-}
-
-func (f *FilterCSSToInject) GetHost(hostname string) *CSSByHost {
-	for _, host := range f.Hosts {
-		if host.Name == hostname {
-			return host
-		}
-	}
-	return nil
-}
-
-func (f *FilterCSSToInject) GetCSS2InjectForHost(hostname string) string {
-	if h := f.GetHost(hostname); h != nil {
-		return strings.Join(h.CSS2Inject, ";")
-	}
-	return ""
-}
-
-func (f *FilterCSSToInject) AddCSS(hostname, css string) {
-	if h := f.GetHost(hostname); h != nil {
-		h.CSS2Inject = append(h.CSS2Inject, css)
-	} else {
-		f.Hosts = append(f.Hosts, &CSSByHost{
-			Name:       hostname,
-			CSS2Inject: []string{css},
-		})
-	}
-}
-
 func handleErr(err error) {
 	if err != nil {
 		log.Fatalln(err)
@@ -206,23 +169,10 @@ func main() {
 		block2remove.addNode(hostBlock[0], node)
 	}
 
-	// Injected CSS
-	CSS2Inject := &FilterCSSToInject{}
-	f, err = os.Open("rules/filters/css2inject.txt")
+	// CSS injector
+	cssInjector := NewCSSIjector()
+	err = cssInjector.LoadRulesFromFile("rules/filters/css2inject.txt")
 	handleErr(err)
-	defer f.Close()
-
-	scanner = bufio.NewScanner(f)
-	scanner.Split(bufio.ScanLines)
-
-	for scanner.Scan() {
-		line := scanner.Text()
-		hostCSS := strings.Split(line, "|")
-		if len(hostCSS) != 2 {
-			log.Fatalln("Bad CSS rule: " + line)
-		}
-		CSS2Inject.AddCSS(hostCSS[0], hostCSS[1])
-	}
 
 	// launch proxy
 	goproxy.CertOrganisation = "Pure proxy"
@@ -302,6 +252,7 @@ func main() {
 
 		// http
 		if strings.HasPrefix(contentType, "text/html") {
+
 			nodes2Remove := block2remove.getHost(ctx.Req.Host)
 			if nodes2Remove == nil {
 				return resp
@@ -374,19 +325,7 @@ func main() {
 			resp.Body = ioutil.NopCloser(buff)
 		} else if strings.HasPrefix(contentType, "text/css") {
 			// inject css ?
-			CSS := CSS2Inject.GetCSS2InjectForHost(ctx.Req.Host)
-			if CSS != "" {
-				// read body
-				body, err := ioutil.ReadAll(resp.Body)
-				if err != nil {
-					ctx.Warnf("Pure - ERROR while reading body: %s", err)
-					return resp
-				}
-				body = append(body, []byte(CSS)...)
-				resp.Body = ioutil.NopCloser(bytes.NewBuffer(body))
-				//HOST www.google.frCONTENT TYPEapplication/json; charset=UTF-8
-
-			}
+			resp.Body, err = cssInjector.Inject(resp.Body, ctx.Req.Host)
 		} else if strings.HasPrefix(contentType, "application/json") {
 			// POC remove google ads on search
 			if ctx.Req.Host == "www.google.fr" {
@@ -407,7 +346,6 @@ func main() {
 					t = t + p + `/*""*/`
 				}
 				body = []byte(t)
-
 				resp.Body = ioutil.NopCloser(bytes.NewBuffer(body))
 			}
 		}
