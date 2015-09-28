@@ -18,12 +18,16 @@ import (
 
 	"golang.org/x/net/html"
 
+	lru "github.com/hashicorp/golang-lru"
 	"github.com/toorop/goproxy"
 	"github.com/toorop/yara"
 )
 
-// CA_CERT -> CA cert (amazing !)
-var CA_CERT = []byte(`-----BEGIN CERTIFICATE-----
+//
+var TLSCacheSize = 200
+
+// CaCert -> CA cert (amazing !)
+var CaCert = []byte(`-----BEGIN CERTIFICATE-----
 MIIB+jCCAWOgAwIBAgIJAO+gwjqaRNK+MA0GCSqGSIb3DQEBCwUAMBUxEzARBgNV
 BAoMClB1cmUgcHJveHkwIBcNMTUwNzIyMTA1MDQ1WhgPMjA1MDA3MTMxMDUwNDVa
 MBUxEzARBgNVBAoMClB1cmUgcHJveHkwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJ
@@ -37,8 +41,8 @@ hZLLzeuWbT6T+mikWoZZive18v81kY7Rf956Ai3YKNgh2WDHMEBRJ9VUdmq08TSI
 ckDzupnnvj5B9Uhq3/xQ8egaCXhDYSmCq17wuZNx
 -----END CERTIFICATE-----`)
 
-// CA_KEY  key
-var CA_KEY = []byte(`-----BEGIN PRIVATE KEY-----
+// CaKey key
+var CaKey = []byte(`-----BEGIN PRIVATE KEY-----
 MIICdwIBADANBgkqhkiG9w0BAQEFAASCAmEwggJdAgEAAoGBAM6MHr+vpsT9oUs1
 gEoiiMUY9IT57tVOVPt71PJh6kTgOwA6u4Q2jUt37Us61IU5OHhXxM+Ky4kcElux
 +VhsSFvguCqSNyzFvYwH4/PMAHBv9R5QOcx7FicHb6honCW83q6o8bku67SS5C0D
@@ -105,6 +109,7 @@ func (n *HTMLNodesToRemove) addNode(host string, node HTMLNode) {
 	n.getHost(host).Nodes = append(n.getHost(host).Nodes, &node)
 }
 
+// TODO map[string][]string
 type CSSByHost struct {
 	Name       string
 	CSS2Inject []string
@@ -147,6 +152,7 @@ func handleErr(err error) {
 	}
 }
 
+//  Main
 func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	verbose := flag.Bool("v", false, "should every proxy request be logged to stdout")
@@ -220,11 +226,28 @@ func main() {
 
 	// launch proxy
 	goproxy.CertOrganisation = "Pure proxy"
-	goproxy.GoproxyCa, err = tls.X509KeyPair(CA_CERT, CA_KEY)
+	// Cache for certs
+	TLSConfigCache, err = lru.New(TLSCacheSize)
+	//goproxy.GoproxyCa, err = tls.X509KeyPair(CaCert, CaKey)
+	ca, err := tls.X509KeyPair(CaCert, CaKey)
 	handleErr(err)
 	proxy := goproxy.NewProxyHttpServer()
 	proxy.Verbose = *verbose
-	proxy.OnRequest().HandleConnect(goproxy.AlwaysMitm)
+
+	MitmConnect := &goproxy.ConnectAction{
+		Action: goproxy.ConnectMitm,
+		TLSConfig: func(host string, ctx *goproxy.ProxyCtx) (*tls.Config, error) {
+			return TLSGetConfig(host, ctx, &ca)
+		},
+	}
+	var AlwaysMitm goproxy.FuncHttpsHandler = func(host string, ctx *goproxy.ProxyCtx) (
+		*goproxy.ConnectAction, string) {
+
+		return MitmConnect, host
+	}
+
+	proxy.OnRequest().HandleConnect(AlwaysMitm)
+
 	/*auth.ProxyBasic(proxy, "my_realm", func(user, passwd string) bool {
 		return user == *login && passwd == *password
 	})*/
@@ -248,7 +271,6 @@ func main() {
 	proxy.OnRequest().DoFunc(
 		func(r *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
 			log.Println("REQUEST: " + r.Method + " " + r.URL.String())
-			//r.Header.Set("X-Pure", "0.0.1")
 			name := ""
 			err = engine.ScanMemory([]byte(r.Host), func(rule *yara.Rule) yara.CallbackStatus {
 				name = rule.Identifier
@@ -366,7 +388,7 @@ func main() {
 
 			}
 		} else if strings.HasPrefix(contentType, "application/json") {
-			//log.Println("ON A DU JSON SUR " + ctx.Req.Host)
+			// POC remove google ads on search
 			if ctx.Req.Host == "www.google.fr" {
 				//log.Println("Du JSON GOOGLE")
 				// read body
