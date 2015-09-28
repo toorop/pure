@@ -17,8 +17,8 @@ type CSSInjector struct {
 	cssToInject map[string][]string
 }
 
-// NewCSSIjector returns a new CSSIjector
-func NewCSSIjector() *CSSInjector {
+// NewCSSInjector returns a new CSSIjector
+func NewCSSInjector() *CSSInjector {
 	return &CSSInjector{
 		new(sync.Mutex), make(map[string][]string),
 	}
@@ -33,7 +33,8 @@ func (i *CSSInjector) LoadRulesFromFile(file string) error {
 	defer f.Close()
 	scanner := bufio.NewScanner(f)
 	scanner.Split(bufio.ScanLines)
-
+	i.Lock()
+	defer i.Unlock()
 	for scanner.Scan() {
 		line := scanner.Text()
 		hostCSS := strings.Split(line, "|")
@@ -72,42 +73,3 @@ func (i *CSSInjector) Inject(body io.ReadCloser, host string) (io.ReadCloser, er
 	}
 	return body, nil
 }
-
-/*
-// TODO map[string][]string
-type CSSByHost struct {
-	Name       string
-	CSS2Inject []string
-}
-
-type FilterCSSToInject struct {
-	Hosts []*CSSByHost
-}
-
-func (f *FilterCSSToInject) GetHost(hostname string) *CSSByHost {
-	for _, host := range f.Hosts {
-		if host.Name == hostname {
-			return host
-		}
-	}
-	return nil
-}
-
-func (f *FilterCSSToInject) GetCSS2InjectForHost(hostname string) string {
-	if h := f.GetHost(hostname); h != nil {
-		return strings.Join(h.CSS2Inject, ";")
-	}
-	return ""
-}
-
-func (f *FilterCSSToInject) AddCSS(hostname, css string) {
-	if h := f.GetHost(hostname); h != nil {
-		h.CSS2Inject = append(h.CSS2Inject, css)
-	} else {
-		f.Hosts = append(f.Hosts, &CSSByHost{
-			Name:       hostname,
-			CSS2Inject: []string{css},
-		})
-	}
-}
-*/

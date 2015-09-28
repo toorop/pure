@@ -170,7 +170,7 @@ func main() {
 	}
 
 	// CSS injector
-	cssInjector := NewCSSIjector()
+	cssInjector := NewCSSInjector()
 	err = cssInjector.LoadRulesFromFile("rules/filters/css2inject.txt")
 	handleErr(err)
 
