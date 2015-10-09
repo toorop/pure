@@ -93,7 +93,6 @@ func processFile(path string, info os.FileInfo, err error) error {
 
 func main() {
 	yaraRuleTemplate = template.Must(template.New("rule").Parse(yaraRuleTpl))
-
 	err := filepath.Walk("rules", processFile)
 	handleErr(err)
 

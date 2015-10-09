@@ -2,7 +2,7 @@ package main
 
 import (
 	"bytes"
-	"crypto/tls"
+	//"crypto/tls"
 	"flag"
 	"io/ioutil"
 	"log"
@@ -13,6 +13,7 @@ import (
 	"runtime"
 	"strings"
 
+	"crypto/tls"
 	lru "github.com/hashicorp/golang-lru"
 	"github.com/toorop/goproxy"
 	"github.com/toorop/yara"
@@ -61,53 +62,14 @@ func normalize(in string) string {
 	return string(t)
 }
 
-// HTMLNode represents a HTML node
-type HTMLNode struct {
-	Name    string
-	Classes []string
-}
-
-// HTMLHost represents an host and its nodes
-type HTMLHost struct {
-	Name  string
-	Nodes []*HTMLNode
-}
-
-func (h *HTMLHost) getNode(nodeTofind string) *HTMLNode {
-	for _, node := range h.Nodes {
-		if node.Name == nodeTofind {
-			return node
-		}
-	}
-	return nil
-}
-
-// HTMLNodesToRemove represents a HMTL node to remove from returned content
-type HTMLNodesToRemove struct {
-	Hosts []*HTMLHost
-}
-
-// getHost return
-func (n *HTMLNodesToRemove) getHost(hostToFind string) *HTMLHost {
-	for _, host := range n.Hosts {
-		if host.Name == hostToFind {
-			return host
-		}
-	}
-	return nil
-}
-
-func (n *HTMLNodesToRemove) addNode(host string, node HTMLNode) {
-	if n.getHost(host) == nil {
-		n.Hosts = append(n.Hosts, &HTMLHost{Name: host})
-	}
-	n.getHost(host).Nodes = append(n.getHost(host).Nodes, &node)
-}
-
 func handleErr(err error) {
 	if err != nil {
 		log.Fatalln(err)
 	}
+}
+
+var IsWebsocket goproxy.ReqConditionFunc = func(r *http.Request, ctx *goproxy.ProxyCtx) bool {
+	return r.Header.Get("Connection") == "Upgrade" || r.Header.Get("Upgrade") == "websocket"
 }
 
 //  Main
@@ -124,7 +86,6 @@ func main() {
 	handleErr(err)
 	// Load & compile rules
 	err = filepath.Walk("rules/yara", func(path string, info os.FileInfo, err error) error {
-		//log.Println(path)
 		if info.IsDir() {
 			return nil
 		}
@@ -189,9 +150,53 @@ func main() {
 		})
 	*/
 
+	// POC websocket
+	/*proxy.OnRequest().HandleConnectFunc(func(host string, ctx *goproxy.ProxyCtx) (*goproxy.ConnectAction, string) {
+		log.Println(host)
+		if host == "live.toorop.fr:80" {
+			msg := "---------------------------------------------------------\n"
+			for k, v := range ctx.Req.Header {
+				msg += string(k) + ":" + v[0] + "\n"
+			}
+			msg += "---------------------------------------------------------\n\n"
+			log.Println(msg)
+		}
+		return goproxy.OkConnect, host
+	})*/
+
+	/*proxy.OnRequest(IsWebsocket).
+		HijackConnect(func(req *http.Request, client net.Conn, ctx *goproxy.ProxyCtx) {
+		defer func() {
+			if e := recover(); e != nil {
+				ctx.Logf("error connecting to remote: %v", e)
+				client.Write([]byte("HTTP/1.1 500 Cannot reach destination\r\n\r\n"))
+			}
+			client.Close()
+		}()
+		log.Println("Requete versTHE  websocket")
+		clientBuf := bufio.NewReadWriter(bufio.NewReader(client), bufio.NewWriter(client))
+		remote, err := connectDial(proxy, "tcp", req.URL.Host)
+		orPanic(err)
+		remoteBuf := bufio.NewReadWriter(bufio.NewReader(remote), bufio.NewWriter(remote))
+		for {
+			req, err := http.ReadRequest(clientBuf.Reader)
+			orPanic(err)
+			orPanic(req.Write(remoteBuf))
+			orPanic(remoteBuf.Flush())
+			resp, err := http.ReadResponse(remoteBuf.Reader, req)
+			orPanic(err)
+			orPanic(resp.Write(clientBuf.Writer))
+			orPanic(clientBuf.Flush())
+		}
+	})*/
+
+	/*proxy.OnRequest(IsWebsocket).DoFunc(func(r *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
+		log.Println("Requete vers websocket")
+		return r, nil
+	})*/
+
 	proxy.OnRequest().DoFunc(
 		func(r *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
-			log.Println("REQUEST: " + r.Method + " " + r.URL.String())
 			name := ""
 			err = engine.ScanMemory([]byte(r.Host), func(rule *yara.Rule) yara.CallbackStatus {
 				name = rule.Identifier
@@ -209,7 +214,6 @@ func main() {
 					goproxy.ContentTypeText, http.StatusForbidden,
 					"I'm sorry, Dave. I'm afraid I can't do that.")
 			}
-			//log.Println(r.Method, r.Host, r.RequestURI)
 			return r, nil
 		})
 
@@ -229,7 +233,6 @@ func main() {
 		} else if strings.HasPrefix(contentType, "application/json") {
 			// POC remove google ads on search
 			if ctx.Req.Host == "www.google.fr" {
-				//log.Println("Du JSON GOOGLE")
 				// read body
 				body, err := ioutil.ReadAll(resp.Body)
 				if err != nil {
@@ -240,7 +243,6 @@ func main() {
 				t := ""
 				for _, p := range bodyPart {
 					if strings.Contains(p, "commercial-unit") || strings.Contains(p, "tadsb") {
-						//log.Println("On fait sauter un bloc")
 						continue
 					}
 					t = t + p + `/*""*/`

@@ -21,13 +21,13 @@ type Rule struct {
 	White    bool
 }
 
-// HTMLCleaner represnets the main cleaner
+// HTMLCleaner represents the main cleaner
 type HTMLCleaner struct {
 	*sync.Mutex
 	Rules map[string]map[string]map[string]bool
 }
 
-// NewHTMLCleaner retuns a pointer to a new HTMLCleaner struct
+// NewHTMLCleaner returns a pointer to a new HTMLCleaner struct
 func NewHTMLCleaner() *HTMLCleaner {
 	return &HTMLCleaner{new(sync.Mutex), make(map[string]map[string]map[string]bool)}
 }
@@ -85,7 +85,7 @@ func (c *HTMLCleaner) Clean(body io.ReadCloser, host string) io.ReadCloser {
 	_, found := c.Rules[host]
 	c.Unlock()
 	if found {
-		log.Println("On remove des nodes pour cet host")
+		//log.Println("On remove des nodes pour cet host")
 		doc, err := html.Parse(body)
 		if err != nil {
 			log.Println("ERROR - HTMLCleaner.Clean - ", err)
@@ -97,7 +97,7 @@ func (c *HTMLCleaner) Clean(body io.ReadCloser, host string) io.ReadCloser {
 		wg := sync.WaitGroup{}
 		var f func(*html.Node)
 		f = func(n *html.Node) {
-			wg.Add(1)
+
 			if n.Type == html.ElementNode {
 				selector := n.Data
 			L:
@@ -119,6 +119,7 @@ func (c *HTMLCleaner) Clean(body io.ReadCloser, host string) io.ReadCloser {
 
 			//wg.Done()
 			for node := n.FirstChild; node != nil; node = node.NextSibling {
+				wg.Add(1)
 				go f(node)
 			}
 			wg.Done()
@@ -126,16 +127,14 @@ func (c *HTMLCleaner) Clean(body io.ReadCloser, host string) io.ReadCloser {
 
 		//  Parse doc
 		//start := time.Now()
+		wg.Add(1)
 		f(doc)
 		// Really bad hack....
 		time.Sleep(time.Duration(100) * time.Millisecond)
 
 		//log.Println("START WAIT")
 		wg.Wait()
-		//log.Println("STOP WAIT")
-		//fmt.Printf("Elapsed %s\n", time.Since(start))
-		// remove block found
-		//log.Println("TO REMOVE:", toRemove)
+
 		for _, n := range toRemove {
 			n.Parent.RemoveChild(n)
 		}
